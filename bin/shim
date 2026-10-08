@@ -1,0 +1,12 @@
+#!/bin/sh
+# Runs one of this project's commands from its own .venv, after `uv sync`
+# has brought .venv in line with uv.lock, so a changed dependency can't leave
+# the command behind the way a `uv tool install` copy does. The commands in
+# ~/.local/bin link here, and the link's name says which one to run.
+root=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+# A command started from another project's .venv inherits its VIRTUAL_ENV,
+# which uv would warn about.
+unset VIRTUAL_ENV
+uv sync --project "$root" --inexact --quiet ||
+    echo "$(basename "$0"): uv sync failed, running what .venv has" >&2
+exec "$root/.venv/bin/$(basename "$0")" "$@"

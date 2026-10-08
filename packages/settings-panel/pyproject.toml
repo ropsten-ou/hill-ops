@@ -1,0 +1,10 @@
+[project]
+name = "settings-panel"
+version = "0.1.0"
+description = "A game-style settings panel for Textual apps: fixed choices, tiles or list, written straight to JSON or TOML config files"
+requires-python = ">=3.11"
+dependencies = ["textual>=8", "tomlkit>=0.13", "keyline>=0.1,<0.2"]
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"

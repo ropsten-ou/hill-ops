@@ -1,0 +1,40 @@
+# Installs hill-ops from scratch on macOS and Linux, runs its tests and the
+# packages', and builds the wheels. tmux is installed so the end-to-end
+# tests run rather than skip.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: tmux (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y tmux
+      - name: tmux (macOS)
+        if: runner.os == 'macOS'
+        run: brew install tmux
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: uv sync --locked
+      - name: Tests
+        run: uv run pytest -q
+      - name: Wheels
+        run: uv build --all-packages -o dist
+      - name: The wheels install and run on their own
+        run: |
+          uv venv --python ${{ matrix.python }} /tmp/fresh
+          uv pip install --python /tmp/fresh dist/*.whl
+          /tmp/fresh/bin/hill-ops --help

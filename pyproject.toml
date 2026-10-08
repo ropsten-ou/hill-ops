@@ -1,0 +1,46 @@
+[project]
+name = "hill-ops"
+version = "0.1.0"
+description = "Runs a terminal app above a strip for its settings, help and commands, the two talking over a channel"
+authors = [
+    { name = "Pierre Baume" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "textual>=8.2.8",
+    "acp-client>=0.1,<0.2",
+    "keyline>=0.1,<0.2",
+    "settings-panel>=0.1,<0.2",
+    "hill-client>=0.1,<0.2",
+]
+
+# On PyPI it's hill-ops, and so is its command: hill is palace's (work item
+# 015), and the import hill_ops (018).
+[project.scripts]
+hill-ops = "hill_ops.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "hill_ops"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+
+# The reusable parts live in packages/ and are installed from there; once
+# published, by name and version.
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+acp-client = { workspace = true }
+keyline = { workspace = true }
+settings-panel = { workspace = true }
+hill-client = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "packages"]
