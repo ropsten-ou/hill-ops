@@ -40,7 +40,7 @@ async def main() -> int:
         elif word == "nopanes":
             client.send("panes")
         elif word == "over":
-            client.send("over", name="editor", argv=["sh", "-c", "sleep 0.5; exit 5"])
+            client.send("over", name="editor", argv=["sh", "-c", "sleep 1.5; exit 5"])
         elif word == "quit":
             break
     print("fake: bye", flush=True)

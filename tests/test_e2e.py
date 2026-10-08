@@ -206,7 +206,8 @@ def test_an_app_runs_programs_beside_it_with_the_strip_under_them(session, state
     app, strip = until(lambda: panes(2), "two panes")
     until(lambda: "quit" in tmux("capture-pane", "-p", "-t", strip), "the app's keys on the strip")
     tmux("send-keys", "-t", app, "panes", "Enter")
-    side = until(lambda: panes(4), "the panes beside the app")
+    # Split first, sized after: wait for the sizes, not only the count.
+    side = until(lambda: (found := panes(4)) and found[strip] == (26, 29, 74, 1, 0) and found, "the panes beside the app, sized")
     assert side[app] == (0, 0, 25, 30, 1)  # 25% at the window's full height, and the focus
     view, claude = sorted((p for p in side if p not in (app, strip)), key=lambda p: side[p][0])
     assert side[claude][2] == 30 and side[view][:2] == (26, 0)
@@ -214,13 +215,15 @@ def test_an_app_runs_programs_beside_it_with_the_strip_under_them(session, state
 
     tmux("send-keys", "-t", app, "open", "Enter")  # the panel grows under the side panes
     until(lambda: panes()[strip][3] == 10 and panes()[strip][2] == 74, "the panel under the side panes")
+    until(lambda: "Preview" in tmux("capture-pane", "-p", "-t", strip), "the panel drawn")  # sized isn't yet ready for Escape
     assert panes()[app][3] == 30
     tmux("send-keys", "-t", strip, "Escape")
-    until(lambda: panes()[strip][3] == 1, "the strip back")
+    # The strip shrinks, then gives the focus back: wait for both, or the app takes it from the select below.
+    until(lambda: panes()[strip][3] == 1 and panes()[app][4] == 1, "the strip back, the focus on the app")
 
     tmux("select-pane", "-t", view)  # the focus beside the app: still the app's keys, and back there
     tmux("send-keys", "-t", app, "open", "Enter")
-    until(lambda: panes()[strip][4] == 1, "the panel focused")
+    until(lambda: panes()[strip][4] == 1 and "Preview" in tmux("capture-pane", "-p", "-t", strip), "the panel focused, drawn")
     tmux("send-keys", "-t", strip, "Escape")
     until(lambda: panes()[view][4] == 1, "the focus back beside the app")
 
@@ -229,14 +232,13 @@ def test_an_app_runs_programs_beside_it_with_the_strip_under_them(session, state
 
     tmux("send-keys", "-t", app, "over", "Enter")
     editor = until(lambda: next((p for p in panes(3) or {} if p not in side), None), "the editor over the side panes")
-    assert panes()[editor][:2] == (36, 0) and panes()[editor][4] == 1
+    until(lambda: (panes().get(editor) or ())[:2] == (36, 0) and panes()[editor][4] == 1, "the editor in place, focused")
     until(lambda: "over.done 5" in tmux("capture-pane", "-p", "-t", app), "the app told it exited")
     until(lambda: set(panes(4) or ()) == set(side), "the side panes back")
-    assert panes()[app][4] == 1
+    until(lambda: panes()[app][4] == 1, "the focus back on the app")
 
     tmux("send-keys", "-t", app, "nopanes", "Enter")
-    until(lambda: panes(2), "the strip back under the app")
-    assert panes()[strip] == (0, 39, 140, 1, 0)
+    until(lambda: (panes(2) or {}).get(strip) == (0, 39, 140, 1, 0), "the strip back under the app")
 
     tmux("send-keys", "-t", app, "quit", "Enter")
     assert terminal.wait() == 3
