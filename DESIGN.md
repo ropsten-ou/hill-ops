@@ -454,3 +454,10 @@ finds its own `work/` next to its code: a clone names its own items on
 anyone's machine, and a folder that isn't there, as in an installed
 package or a public clone without items, is no work folder. palace names
 none, since what it lacks goes in hill-ops's, which hill-ops already lists.
+
+**2026-10-08 · Published to PyPI from the public repo, on a tag.** A tag
+`v*` in `ropsten-ou/hill-ops` tests, builds hill-ops and its four packages
+with no path sources, and publishes the ones whose version PyPI doesn't
+have yet. PyPI trusts that workflow (trusted publishing), so there's no
+token to keep or leak, and what's on PyPI is what the public repo holds:
+the private repo never publishes (work item 017).
