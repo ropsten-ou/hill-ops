@@ -45,7 +45,7 @@ On Debian or Ubuntu, `sudo apt install tmux`, and uv from its
    own settings, and a line under them to search them or to ask Claude
    about the app. Esc closes it.
 5. An app that talks to hill-ops gets more: its settings, keys, help and
-   commands in the strip. [palace](https://github.com/pierreb4/hill), a
+   commands in the strip. [palace](https://github.com/ropsten-ou/hill/blob/main/README.md), a
    notes screen, is one (`uv tool install hill`, then `hill`); The
    channel and Profiles, below, say how to make another.
 
