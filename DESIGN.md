@@ -461,3 +461,12 @@ with no path sources, and publishes the ones whose version PyPI doesn't
 have yet. PyPI trusts that workflow (trusted publishing), so there's no
 token to keep or leak, and what's on PyPI is what the public repo holds:
 the private repo never publishes (work item 017).
+
+**2026-10-09 · A copy goes to the system's clipboard too.** Selected text
+went to the terminal as OSC 52 alone, which tmux passed on; a terminal
+such as Konsole ignores it, so nothing reached the clipboard, though
+tmux's buffers held every selection. hill-ops now sets tmux's
+`copy-command` to the system's clipboard tool (pbcopy, wl-copy, xclip or
+xsel) where there is one, and hill-client's `copy` runs it for the panel
+and palace's panes. OSC 52 stays, since over ssh it's the only way to the
+clipboard of the machine you sit at.

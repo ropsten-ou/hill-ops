@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 import hill_client
-from hill_client import Client, Hover, connect, line, take_focus
+from hill_client import Client, Hover, connect, copy, line, take_focus
 
 
 @pytest.fixture
@@ -169,6 +169,28 @@ def test_take_focus_gives_a_pane_the_focus_but_not_while_the_strip_keeps_it(monk
         Path(socket).unlink(missing_ok=True)
     monkeypatch.delenv("TMUX")
     assert not take_focus()  # outside tmux
+
+
+@pytest.mark.skipif(shutil.which("tmux") is None, reason="needs tmux")
+def test_copy_hands_the_text_to_tmuxs_copy_command(monkeypatch, tmp_path):
+    name = f"hill-client-copy-{os.getpid()}"
+
+    def tmux(*args):
+        return subprocess.run(["tmux", "-L", name, *args], capture_output=True, text=True).stdout.strip()
+
+    tmux("-f", os.devnull, "new-session", "-d", "-s", "hill", "sleep 60")
+    socket = tmux("display", "-p", "#{socket_path}")
+    clipboard = tmp_path / "clipboard"
+    try:
+        monkeypatch.setenv("TMUX", f"{socket},1,0")
+        assert not copy("hello")  # no copy-command: OSC 52 alone
+        tmux("set", "-g", "copy-command", f"cat > {clipboard}")  # as xclip would
+        assert copy("hello, world") and clipboard.read_text() == "hello, world"
+    finally:
+        tmux("kill-server")
+        Path(socket).unlink(missing_ok=True)
+    monkeypatch.delenv("TMUX")
+    assert not copy("hello")  # outside tmux
 
 
 def test_hover_takes_the_focus_lazily(monkeypatch):

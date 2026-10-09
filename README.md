@@ -189,7 +189,12 @@ Claude said last offers something, Ret on an empty line takes it. A click on
 the tip, or Alt-c, asks for another; a click on its offer (✓) takes it.
 PgUp and PgDn scroll a long answer. Text you select with the mouse in the
 panel, such as Claude's answer, goes to the clipboard as you let go of the
-button, as in palace's panes (tmux passes it on: `set-clipboard on`). The panel stays open while you go back
+button, as in palace's panes and in a pane whose program doesn't use the
+mouse, such as a shell. It goes two ways: to the terminal as OSC 52, which
+tmux passes on (`set-clipboard on`) and which reaches it over ssh too, and
+to the system's clipboard command, which tmux copies with (`copy-command`:
+pbcopy on macOS, wl-copy, xclip or xsel on Linux's desktop), for a
+terminal that ignores OSC 52, such as Konsole or GNOME Terminal. The panel stays open while you go back
 to the app: the app's key for the settings, for Claude or for its command
 line gives it the focus again, as does moving the mouse over it, and the
 help or a question open over it and go back to it. When the panel gets the

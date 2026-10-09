@@ -1,6 +1,6 @@
 [project]
 name = "hill-ops"
-version = "0.1.0"
+version = "0.1.1"
 description = "Runs a terminal app above a strip for its settings, help and commands, the two talking over a channel"
 authors = [
     { name = "Pierre Baume" }
@@ -11,7 +11,7 @@ dependencies = [
     "acp-client>=0.1,<0.2",
     "keyline>=0.1,<0.2",
     "settings-panel>=0.1,<0.2",
-    "hill-client>=0.1,<0.2",
+    "hill-client>=0.1.1,<0.2",
 ]
 
 # On PyPI it's hill-ops, and so is its command: hill is palace's (work item

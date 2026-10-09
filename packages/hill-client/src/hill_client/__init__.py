@@ -9,7 +9,8 @@ Messages are JSON-RPC notifications, one per line, over the local socket
 whose path is in $HILL_SOCKET.
 
 A program in hill-ops's window can also take the focus when the mouse moves
-over it (`take_focus`), for focus that follows the mouse, lazily (`Hover`).
+over it (`take_focus`), for focus that follows the mouse, lazily (`Hover`),
+and put text in the system clipboard (`copy`).
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ import time
 from collections.abc import Callable, Iterable
 from typing import Any
 
-__all__ = ["SOCKET", "Client", "Hover", "connect", "line", "take_focus"]
+__all__ = ["SOCKET", "Client", "Hover", "connect", "copy", "line", "take_focus"]
 
 SOCKET = "HILL_SOCKET"
 """The environment variable holding the channel's path, set for every
@@ -51,6 +52,32 @@ def take_focus(pane: str | None = None) -> bool:
     except (OSError, subprocess.SubprocessError):
         return False
     return done.stdout.strip() == pane
+
+
+def copy(text: str) -> bool:
+    """Put `text` in the system clipboard with the command hill-ops's tmux
+    copies with (copy-command: pbcopy, wl-copy, xclip or xsel), for a
+    terminal that ignores OSC 52, such as Konsole or GNOME Terminal. Call
+    it as well as writing OSC 52, which reaches the terminal over ssh.
+    Whether it ran; False outside tmux, or where tmux has no such
+    command."""
+    if not os.environ.get("TMUX"):
+        return False
+    try:
+        command = subprocess.run(
+            ["tmux", "show", "-gv", "copy-command"], capture_output=True, text=True, timeout=2,
+        ).stdout.strip()
+        if not command:
+            return False
+        # The clipboard tool may stay behind to serve the clipboard (xclip,
+        # wl-copy): nothing waits on its output.
+        done = subprocess.run(
+            command, shell=True, input=text.encode(), stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, timeout=2, start_new_session=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return done.returncode == 0
 
 
 class Hover:

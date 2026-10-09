@@ -79,3 +79,11 @@ def on_mouse_move(event):                    # in a Textual app
     if hover.moved(event.screen_offset, part_under(event), has_focus) and hover.take_focus():
         give_focus(part_under(event))
 ```
+
+- **copy(text)** puts `text` in the system clipboard with the command
+  hill-ops's tmux copies with (its `copy-command`: pbcopy on macOS,
+  wl-copy, xclip or xsel on Linux's desktop), and returns whether it ran:
+  False outside tmux, or where there is no such command, such as over
+  ssh. Call it as well as writing OSC 52 (Textual's `copy_to_clipboard`),
+  which reaches a terminal over ssh but not one that ignores it, such as
+  Konsole or GNOME Terminal. It needs no channel either.

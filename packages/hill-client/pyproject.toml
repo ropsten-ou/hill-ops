@@ -1,6 +1,6 @@
 [project]
 name = "hill-client"
-version = "0.1.0"
+version = "0.1.1"
 description = "Join hill-ops's channel from a Python app: say hello, open settings, hear about changes"
 requires-python = ">=3.11"
 dependencies = []

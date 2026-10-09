@@ -14,6 +14,8 @@ def state_home(tmp_path, monkeypatch):
     monkeypatch.setenv("HILL_CLAUDE_AGENT", "no-claude-in-tests")
     monkeypatch.setenv("HILL_WORK_DIR", str(tmp_path / "work"))  # hill's own work items: none, unless a test makes the folder
     monkeypatch.delenv("HILL_INSTANCE", raising=False)  # inside hill, the instance is yours; a test that wants one sets its own
+    monkeypatch.delenv("TMUX", raising=False)  # nor your tmux: a copy would go to your clipboard (hill-client's copy)
+    monkeypatch.delenv("TMUX_PANE", raising=False)
     return tmp_path / "state"
 
 

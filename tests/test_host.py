@@ -109,3 +109,22 @@ def test_the_runner_reports_a_command_that_cannot_run(monkeypatch, tmp_path, cap
 def test_a_program_beside_the_app_exits_with_its_status(monkeypatch):
     monkeypatch.setenv("HILL_ARGV", json.dumps([sys.executable, "-c", "import sys; sys.exit(5)"]))
     assert runner.side() == 5  # not on a terminal here: without the relay
+
+
+def test_the_clipboard_command_is_the_systems(monkeypatch):
+    def having(*tools):
+        monkeypatch.setattr(host.shutil, "which", lambda name: f"/usr/bin/{name}" if name in tools else None)
+
+    monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+    monkeypatch.delenv("DISPLAY", raising=False)
+    having("pbcopy")
+    assert host._copy_command() == "pbcopy"
+    having("wl-copy", "xclip", "xsel")
+    assert host._copy_command() is None  # over ssh, no desktop: OSC 52 alone
+    monkeypatch.setenv("DISPLAY", ":20")
+    assert host._copy_command() == "xclip -selection clipboard"
+    having("xsel")
+    assert host._copy_command() == "xsel --clipboard --input"
+    having("wl-copy", "xclip")
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-0")
+    assert host._copy_command() == "wl-copy"

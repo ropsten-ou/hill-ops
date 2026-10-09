@@ -40,7 +40,7 @@ from textual.widgets import Input
 from acp_client import Agent, AgentError
 from keyline import Key, Keyline
 from settings_panel import OFF_ON, Entry, Group, JsonStore, Listing, OverlayStore, Setting, SettingsScreen, StoreError, panel_settings
-from hill_client import SOCKET, Hover
+from hill_client import SOCKET, Hover, copy
 
 from . import clock
 from .claude import Answer, Context, command, meta, parse_answer, parse_tip, question_prompt, shown, tip_prompt
@@ -596,9 +596,11 @@ class Panel(App):
         """Text selected with the mouse, such as Claude's answer, goes to
         the clipboard as the button is let go, as in palace's panes:
         Textual writes it for the terminal (OSC 52), which tmux passes on
-        (set-clipboard)."""
+        (set-clipboard), and tmux's copy-command, such as xclip, for a
+        terminal that ignores OSC 52 (hill-client's copy)."""
         if text := self.screen.get_selected_text():
             self.copy_to_clipboard(text)
+            copy(text)
 
     def on_app_blur(self) -> None:
         # A click back in the app closes what the strip shows, but the

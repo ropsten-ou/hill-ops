@@ -150,8 +150,8 @@ class Session:
         self.tmux("set-hook", "-g", "window-resized", "run-shell -C '#{E:@hill-relayout}'")
         if os.environ.get("COLORTERM") in ("truecolor", "24bit"):
             self.tmux("set", "-as", "terminal-features", ",*:RGB")
-        if shutil.which("pbcopy"):
-            self.tmux("set", "-g", "copy-command", "pbcopy")
+        if copy := _copy_command():
+            self.tmux("set", "-g", "copy-command", copy)
         instances.prune(program)  # now that the server is up, and this instance counts as running
 
     def attach(self) -> int:
@@ -188,6 +188,25 @@ class Session:
 def tmux_socket(name: str) -> Path:
     """Where tmux keeps the socket of the server `tmux -L name` runs."""
     return Path(os.environ.get("TMUX_TMPDIR") or "/tmp") / f"tmux-{os.getuid()}" / name
+
+
+def _copy_command() -> str | None:
+    """The command that puts its input in the system clipboard: pbcopy on
+    macOS, wl-copy, xclip or xsel on Linux's desktop. tmux copies a
+    selection with it, and hill-client's `copy` too, since a terminal that
+    ignores OSC 52, such as Konsole or GNOME Terminal, wouldn't get it
+    otherwise. None where there is none, such as over ssh: OSC 52 alone
+    then."""
+    if shutil.which("pbcopy"):
+        return "pbcopy"
+    if os.environ.get("WAYLAND_DISPLAY") and shutil.which("wl-copy"):
+        return "wl-copy"
+    if os.environ.get("DISPLAY"):
+        if shutil.which("xclip"):
+            return "xclip -selection clipboard"
+        if shutil.which("xsel"):
+            return "xsel --clipboard --input"
+    return None
 
 
 def _program(argv: list[str]) -> str:
